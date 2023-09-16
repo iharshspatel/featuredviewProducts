@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <!-- <link rel="stylesheet" href="http://127.0.0.1:5500/build/wizzyFeaturedView.min.css"/>
+    <link rel="stylesheet" href="style.css"/> 
+    --> 
+    <link rel="stylesheet" href="style.css"/> 
+
+    <style>
+      .wizzyFeaturedViewRendered #root{
+        width: 100%;
+        height: 96vh;
+      }
+    </style>
+   
+    <title>Featured View</title>
+</head>
+<body>
+    <div id="root"></div>
+    <button id="init-featured-view-button">Init The Featured View</button>
+   
+   
+    <!---  <script src="http://127.0.0.1:5500/build/wizzyFeaturedView.min.js"></script>  <script src="index.js"></script>   -->
+    <script>
+        let button = document.getElementById("init-featured-view-button");
+        button.addEventListener('click',function(){
+            window.initFeaturedView({
+                dom:'root',
+                filters:"{\"attributes\":{},\"attributeFacetValuesLimit\":\"20\",\"categories\":[\"gifting-with-moi\"],\"currency\":\"USD\",\"getAllVariants\":\"false\",\"page\":1,\"productsCount\":\"20\",\"q\":\"pefect gitf\",\"searchedKey\":\"VU05NGUza2pzYkFYR1ZXdXpOMFd2UU1Vc1FOOTJvcXVzem0rUWNvZE5PMD0=\",\"sort\":[{\"field\":\"relevance\",\"order\":\"asc\"}],\"type\":\"DEFAULT\",\"facets\":[{\"label\":\"Categories\",\"key\":\"categories\",\"position\":\"left\",\"order\":0},{\"label\":\"Price\",\"key\":\"sellingPrice\",\"position\":\"left\",\"order\":1},{\"label\":\"Size\",\"key\":\"sizes\",\"position\":\"left\",\"order\":2},{\"label\":\"Availability\",\"key\":\"inStock\",\"position\":\"left\",\"order\":3}],\"inStock\":[],\"swatch\":[]}",
+                attributeIds:["product_custom_product_type" , "product_vendor", "product_sku"],
+                attributesToShowOnViewMore:["product_sku" , "product_grams", "product_vendor"],
+                displayImageInSquare:true,
+                displayStoreName:true,
+                displayDispalyAddToCartNumber:true,
+                storeName:"MOI",
+                currentCartCount:5,
+                displayAddToCart:true,
+                displayViewMore:true, 
+                //attributeIds:['product_value_tags_category', 'product_value_tags_clothing_type', 'product_value_tags_color']
+            })
+        })
+
+
+
+        window.wizzyConfig = {
+            credentials:{
+                "apiKey": "bnlmbE1JZ0QyRFd1YkRBbW1OUGcraHpicXdGSkFXT1hMZGRCWWl3SGFZdmNZVkVsWENuTmx3ei90QlpXT2hRV2ZhaUl4NU5UV2p4RVJCU0N2Q3NVK0E9PQ==",
+                "storeId": "62e4a0386c0711edb13a0a0c8095feae"
+            },
+            store:{
+                currency :{
+                    symbol:"Rs.",
+                }
+            }
+
+        }
+
+      
+     </script>
+     <script src="index.js"></script>
+     <script>
+        console.log(window.featuredViewConfig);
+        window.featuredViewConfig.events.registerEvent(window.featuredViewConfig.events.allowedEvents.AFTER_PRODUCTS_TRANSFORMED, function(payload){
+            console.log("After product transformed", payload);
+            payload.forEach((item)=>{
+              item.images.splice(1,1)
+           })
+           return payload
+         })
+
+         window.featuredViewConfig.events.registerEvent(
+            window.featuredViewConfig.events.allowedEvents.AFTER_PRODUCTS_FETCHED,
+            function (data) {
+              console.log("wizzy after produicts")
+              let results = data.payload.result;
+          
+              results.forEach((result) => {
+                result.attributes.forEach((attribute) => {
+                  if (attribute.id === "product_variant_ids") {
+                    result.id = attribute.values[0].value[0];
+                    console.log(attribute.values[0].value[0], result.id);
+                  }
+                });
+              });
+          
+              results.map((result) => {
+                result.backImages = [];
+                result.images = result.images.map((image) => {
+                  result.backImages.push(replaceDimension(image, "100x"));
+                  return replaceDimension(image, "780x");
+                });
+                result.groupId = null;
+                result.images.splice(0, 1);
+                result.mainImage = replaceDimension(result.mainImage, "780x");
+                result.mainBackImage = replaceDimension(result.mainImage, "100x");
+              });
+              return data;
+            }
+          );
+        
+          function replaceDimension(imageUrl, newDimension) {
+            const regex = /_\d+x/; // Regular expression to match the dimension format (e.g., "_297x")
+            const updatedUrl = imageUrl.replace(regex, "_" + newDimension);
+            return updatedUrl;
+          }
+ 
+          window.featuredViewConfig.events.registerEvent(
+            window.featuredViewConfig.events.allowedEvents.ADD_TO_CART,
+            function (payload) {
+                console.log("This is Payload of Add to cart", payload)
+                window.featuredViewConfig.events.triggerEvent(window.featuredViewConfig.events.allowedEvents.ON_ADD_TO_CART_SUCCESS, window.getWizzyFeaturedViewCurrentCartCount()+1)
+              return payload;
+            }
+          );
+
+       
+
+     </script>
+</body>
+</html>
